@@ -4,6 +4,7 @@ import datetime
 import argparse
 from sum_media_duration import format_duration_to_seconds, get_total_duration
 from _utils import build_file_list
+from VendorDB import VendorDatabase
 
 
 @dataclass
@@ -15,14 +16,17 @@ class JobBatch:
 
 class UploadBatch():
 
-    def __init__(self, JobBatch) -> None:
+    def __init__(self, JobBatch, VendorDB) -> None:
         self.MediaBatch = JobBatch
+        self.transaction_db = VendorDB
 
     def get_platform_table(self) -> dict:
         #Database Schema asserttion needed
-        #Total Seconds
-        #callDatabase()
-        platform_db = {}
+        platform_db = self.transaction_db
+        platform_db['vendors'].insert({
+            "name": "Youtube",
+            "duration": 200
+        })
         platform_db["Youtube"] = 200
         platform_db["Instagram"]= 20000
         platform_db["TikTok"] = 20000
@@ -53,9 +57,11 @@ class UploadBatch():
         except:
             print('platform Does not exists')
         
-        estimated_final_duration = ( batch_duration + platform_duration_from_db)
+        estimated_final_duration = (
+            batch_duration + platform_duration_from_db)
+
         db_duration_as_sec = (estimated_final_duration + db_duration_as_sec)
-        platform_ratio = (estimated_final_duration/db_duration_as_sec) #Calculate
+        platform_ratio = (estimated_final_duration/db_duration_as_sec) #  Calculate
         print(f'Values: \
             {platform_ratio}, {db_duration_as_sec}, {estimated_final_duration}')
         #If the addition of these durations is greater than 10% it won't order captions
@@ -102,7 +108,7 @@ if __name__ == "__main__":
     if not batch.files:
         print('No accepted files found. Drag files or folders or both.')
     else:
-        batch_transaction = UploadBatch(batch)
+        batch_transaction = UploadBatch(batch, VendorDatabase)
         transaction_status = batch_transaction.determine_platform_ratio()
         if transaction_status:
             print("Ordered Captions")

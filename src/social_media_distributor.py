@@ -108,7 +108,7 @@ if __name__ == "__main__":
     if not batch.files:
         print('No accepted files found. Drag files or folders or both.')
     else:
-        batch_transaction = UploadBatch(batch, VendorDatabase)
+        batch_transaction = UploadBatch(batch, VendorDatabase(db_file=True))
         transaction_status = batch_transaction.determine_platform_ratio()
         if transaction_status:
             print("Ordered Captions")

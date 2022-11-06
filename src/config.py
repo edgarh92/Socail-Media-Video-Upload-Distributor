@@ -1,6 +1,9 @@
 
-VENDOR_DB_SCHEMA = {
-            "id": int,
-            "name": str,
-            "duration": int,
+VENDOR_DATABASE_CONFIG = {
+            'table_name': 'VendorTracking',
+            'table_schema':
+            {
+                "id": str,
+                "duration": int,
             }
+}

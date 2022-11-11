@@ -51,7 +51,7 @@ class VideoProcessor():
             print("No attributes found")
             return None
 
-def installed(program):
+def installed(program: str) -> bool:
     ''' Check if a program is installed'''
     if which(program):
         return True

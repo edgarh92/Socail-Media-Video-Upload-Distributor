@@ -4,13 +4,13 @@ from typing import Union
 
 
 class VendorDatabase():
-    def __init__(self, db_file: Union[bool, str],db_config:dict) -> None:
+    def __init__(self, db_file: Union[bool, str], db_config:dict) -> None:
         self.database_file = db_file
         self._database = None
         self.config = db_config
 
     @property
-    def database(self):
+    def database(self) -> Database:
         if self._database is None:
             if type(self.database_file) is bool:
                 self._database = Database(memory=True)
@@ -21,7 +21,7 @@ class VendorDatabase():
     def get_vendor(self, vendor_id: str):
         return self.database['vendors'].get(vendor_id)
 
-    def create_table(self, ):
+    def create_table(self):
         self.database[self.config['table_name']].create(
             self.config['table_schema'],
             pk="id")

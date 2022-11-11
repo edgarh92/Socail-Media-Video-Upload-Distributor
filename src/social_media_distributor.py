@@ -21,7 +21,13 @@ class UploadBatch():
         self.transaction_db = VendorDB
 
     def get_platform_table(self) -> dict:
-        #Database Schema asserttion needed
+        """
+        Return the table containing all platforms available to distribute
+
+
+        Returns:
+            platform_db: Database
+        """        
         platform_db = self.transaction_db
         platform_db['vendors'].insert({
             "name": "Youtube",
@@ -40,7 +46,8 @@ class UploadBatch():
             platform Ratio
 
         Returns:
-            bool: Trigger caption order through mediawen if ratio is below required target.
+            bool: Trigger caption order through platform if ratio is below 
+            required target.
         """    
         #Calculate Ratio and Updates Database
 
@@ -64,8 +71,7 @@ class UploadBatch():
         platform_ratio = (estimated_final_duration/db_duration_as_sec) #  Calculate
         print(f'Values: \
             {platform_ratio}, {db_duration_as_sec}, {estimated_final_duration}')
-        #If the addition of these durations is greater than 10% it won't order captions
-        #
+    #If the addition of these durations is greater than 10% it won't order captions
         if platform_ratio < float(.10): #This needs work.
             #This will add contiously. 
             #If the ratio is greater than 10 it will add to the total
@@ -74,17 +80,22 @@ class UploadBatch():
             print("Commit to orderCaptions")
             return True
         else:
-            #Keep to Rev
             print("Commit to platformDuration")
             print("Commit to updateDatabase")
             return False
         
 
-    def platform_transaction(self, is_valid_order) -> None:
+    def platform_transaction(self, is_valid_order: bool) -> None:
         '''Excute Captions Transaction'''
+        pass
 
 
     def determine_platform_ratio(self) -> bool:
+        """Run calculation for distribution of content and return 
+
+        Returns:
+            is_valid_transaction: Boolean to determine if transaction should occur. 
+        """        
 
         self.MediaBatch.duration = format_duration_to_seconds(get_total_duration(
             video_file_list=self.MediaBatch.files)

@@ -7,11 +7,11 @@ from _utils import build_file_list
 from VendorDB import VendorDatabase
 
 
-@dataclass
-class JobBatch:
-    duration: datetime.timedelta = None
-    assignment: str = None
-    files: list = None
+@dataclass(frozen=True)
+class JobBatch():
+    duration: datetime.timedelta
+    assignment: str
+    files: list
 
 
 class UploadBatch():
@@ -68,10 +68,10 @@ class UploadBatch():
             batch_duration + platform_duration_from_db)
 
         db_duration_as_sec = (estimated_final_duration + db_duration_as_sec)
-        platform_ratio = (estimated_final_duration/db_duration_as_sec) #  Calculate
+        platform_ratio = (estimated_final_duration/db_duration_as_sec) #  Calculate ratio
         print(f'Values: \
             {platform_ratio}, {db_duration_as_sec}, {estimated_final_duration}')
-    #If the addition of these durations is greater than 10% it won't order captions
+            #If the addition of these durations is greater than 10% it won't order captions
         if platform_ratio < float(.10): #This needs work.
             #This will add contiously. 
             #If the ratio is greater than 10 it will add to the total
@@ -105,7 +105,6 @@ class UploadBatch():
         return is_valid_transaction
 
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Upload a video to social mediia based on total duration of existing social media uploads")
@@ -127,4 +126,3 @@ if __name__ == "__main__":
 
         else:
             print("no captions")
-        

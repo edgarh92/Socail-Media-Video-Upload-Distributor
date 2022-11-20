@@ -3,19 +3,34 @@ from config import VENDOR_DATABASE_CONFIG
 from typing import Union
 
 
+def create_database(db_file: Union[str, bool]) -> Database:
+    """Create an SQL Lite Database
+
+    Args:
+        db_file (Union[str,bool]): path of SQL DB file
+
+    Returns:
+        Database: Database class for use
+    """
+
+    if type(db_file) is bool:
+        sql_database = Database(memory=True)
+    else:
+        sql_database = Database(self.database_file)
+
+    return sql_database
+
+
 class VendorDatabase():
-    def __init__(self, db_file: Union[bool, str], db_config:dict) -> None:
-        self.database_file = db_file
+    def __init__(self, db_file: Union[bool, str], db_config: dict) -> None:
         self._database = None
         self.config = db_config
+        self.db_file = db_file
 
     @property
     def database(self) -> Database:
         if self._database is None:
-            if type(self.database_file) is bool:
-                self._database = Database(memory=True)
-            else:
-                self._database = Database(self.database_file)
+            self._database = create_database(self.db_file)
         return self._database
 
     def get_vendor(self, vendor_id: str):

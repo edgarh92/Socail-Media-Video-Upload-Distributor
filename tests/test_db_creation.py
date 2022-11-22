@@ -1,11 +1,12 @@
 from src.VendorDB import VendorDatabase, create_database
-from src.config import VENDOR_DATABASE_CONFIG
 from sqlite_utils import Database
 import pytest
+
 
 def test_memory_db():
     db = create_database(True)
     assert isinstance(db, Database)
+
 
 def test_db_creation(): 
     db = VendorDatabase()

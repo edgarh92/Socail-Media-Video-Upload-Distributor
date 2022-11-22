@@ -2,9 +2,9 @@
 from dataclasses import dataclass
 import datetime
 import argparse
-from sum_media_duration import format_duration_to_seconds, get_total_duration
-from _utils import build_file_list
-from VendorDB import VendorDatabase
+from src.sum_media_duration import format_duration_to_seconds, get_total_duration
+from src._utils import build_file_list
+from src.VendorDB import VendorDatabase
 
 
 @dataclass(frozen=True)

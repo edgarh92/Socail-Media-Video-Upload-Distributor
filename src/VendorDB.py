@@ -1,5 +1,5 @@
 from sqlite_utils import Database
-from config import VENDOR_DATABASE_CONFIG
+from src.config import VENDOR_DATABASE_CONFIG
 from typing import Union
 
 
@@ -16,16 +16,17 @@ def create_database(db_file: Union[str, bool]) -> Database:
     if type(db_file) is bool:
         sql_database = Database(memory=True)
     else:
-        sql_database = Database(self.database_file)
+        sql_database = Database(db_file)
 
     return sql_database
 
 
 class VendorDatabase():
-    def __init__(self, db_file: Union[bool, str], db_config: dict) -> None:
+    def __init__(self, db_file: Union[bool, str] = None) -> None:
         self._database = None
-        self.config = db_config
-        self.db_file = db_file
+        self.config = VENDOR_DATABASE_CONFIG
+        if not db_file:
+            self.db_file = VENDOR_DATABASE_CONFIG['db_file']
 
     @property
     def database(self) -> Database:
@@ -48,9 +49,7 @@ class VendorDatabase():
 
 
 if __name__ == "__main__":
-    db = VendorDatabase(
-        db_file="test.db",
-        db_config=VENDOR_DATABASE_CONFIG)
+    db = VendorDatabase()
     db.insert_transaction(
         {
             "id": "Youtube",

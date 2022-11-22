@@ -5,5 +5,6 @@ VENDOR_DATABASE_CONFIG = {
             {
                 "id": str,
                 "duration": int,
-            }
+            },
+            'db_file': './vendor.db'
 }

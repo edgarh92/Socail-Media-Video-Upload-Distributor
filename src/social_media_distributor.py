@@ -20,6 +20,7 @@ class UploadBatch():
     def __init__(self, JobBatch, VendorDB: VendorDatabase) -> None:
         self.MediaBatch = JobBatch
         self.transaction_db = VendorDB
+
     def check_ratio_threshhold(self, ratio:float):
         if platform_ratio < PLATFORM_TARGET_RATIOS['YOUTUBE'] : #This needs work.
             #This will add contiously. 
@@ -61,8 +62,9 @@ class UploadBatch():
         except:
             print('platform Does not exists')
         
-        est_platform_duration = (
-            batch_duration + platform_duration_from_db)
+        est_platform_duration = sum(
+                batch_duration,
+                platform_duration_from_db)
 
         total_db_duration = (est_platform_duration + total_db_duration)
         platform_ratio = (est_platform_duration/total_db_duration) #  Calculate ratio

@@ -1,5 +1,5 @@
 from sqlite_utils import Database
-from src.config import VENDOR_DATABASE_CONFIG
+from config import VENDOR_DATABASE_CONFIG
 from typing import Union
 
 
@@ -46,6 +46,10 @@ class VendorDatabase():
         self.database["vendors"].upsert(
             incoming_insert,
             pk="id")
+        
+    def get_all_durations(self):
+        for record in self.database.query("select duration from vendors"):
+            yield record['duration']
 
 
 if __name__ == "__main__":
@@ -56,4 +60,23 @@ if __name__ == "__main__":
             "duration": 200
         }
     )
-    print(db.get_vendor(vendor_id='Youtube'))
+    db.insert_transaction(
+        {
+            "id": "Spotify",
+            "duration": 200
+        }
+    )
+    db.insert_transaction(
+        {
+            "id": "Youtube",
+            "duration": 200
+        }
+    )
+    db.insert_transaction(
+        {
+            "id": "Aggregated Platforms",
+            "duration": 200
+        }
+    )
+    for duration in db.get_all_durations():
+        print(duration)

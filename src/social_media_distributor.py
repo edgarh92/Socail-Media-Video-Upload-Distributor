@@ -2,9 +2,10 @@
 from dataclasses import dataclass
 import datetime
 import argparse
-from src.sum_media_duration import format_duration_to_seconds, get_total_duration
-from src._utils import build_file_list
-from src.VendorDB import VendorDatabase
+from sum_media_duration import format_duration_to_seconds, get_total_duration
+from _utils import build_file_list #  TODO: set this backt to src for pytest
+from VendorDB import VendorDatabase #  TODO: set this backt to src for pytest
+from config import PLATFORM_TARGET_RATIOS
 
 
 @dataclass(frozen=True)
@@ -16,63 +17,12 @@ class JobBatch():
 
 class UploadBatch():
 
-    def __init__(self, JobBatch, VendorDB) -> None:
+    def __init__(self, JobBatch, VendorDB: VendorDatabase) -> None:
         self.MediaBatch = JobBatch
         self.transaction_db = VendorDB
 
-    def get_platform_table(self) -> dict:
-        """
-        Return the table containing all platforms available to distribute
-
-
-        Returns:
-            platform_db: Database
-        """        
-        platform_db = self.transaction_db
-        platform_db['vendors'].insert({
-            "name": "Youtube",
-            "duration": 200
-        })
-        platform_db["Youtube"] = 200
-        platform_db["Instagram"]= 20000
-        platform_db["TikTok"] = 20000
-        return platform_db
-
-    def is_valid_order(self, duration_db: dict) -> bool:
-
-        """ Calculate Latest platform Duration,
-            estimated final duration, and platform to platform duration
-            Calculate Latest Database Duration
-            platform Ratio
-
-        Returns:
-            bool: Trigger caption order through platform if ratio is below 
-            required target.
-        """    
-        #Calculate Ratio and Updates Database
-
-        #Date Time Object as Seconds
-        db_duration_as_sec = datetime.timedelta().total_seconds()
-        batch_duration = self.MediaBatch.duration
-
-        for captioned_duration in duration_db.values():
-            db_duration_as_sec += captioned_duration
-
-        try:            
-            platform_duration_from_db = duration_db[self.MediaBatch.assignment]
-            print("Stored platform Duration:", platform_duration_from_db)
-        except:
-            print('platform Does not exists')
-        
-        estimated_final_duration = (
-            batch_duration + platform_duration_from_db)
-
-        db_duration_as_sec = (estimated_final_duration + db_duration_as_sec)
-        platform_ratio = (estimated_final_duration/db_duration_as_sec) #  Calculate ratio
-        print(f'Values: \
-            {platform_ratio}, {db_duration_as_sec}, {estimated_final_duration}')
-            #If the addition of these durations is greater than 10% it won't order captions
-        if platform_ratio < float(.10): #This needs work.
+    def check_ratio_threshhold(self, ratio:float):
+        if platform_ratio < PLATFORM_TARGET_RATIOS['YOUTUBE'] : #This needs work.
             #This will add contiously. 
             #If the ratio is greater than 10 it will add to the total
             print("Commit to platformDuration")
@@ -82,7 +32,46 @@ class UploadBatch():
         else:
             print("Commit to platformDuration")
             print("Commit to updateDatabase")
-            return False
+        return False
+
+    def is_valid_order(self) -> bool:
+
+        """ Calculate Latest platform Duration,
+            estimated final duration, and platform to platform duration
+            Calculate Latest Database Duration
+            platform Ratio
+
+        Returns:
+            bool: Trigger upload order through platform if ratio is below 
+            required threshhold
+        """    
+        #Calculate Ratio and Updates Database
+
+        #Date Time Object as Seconds
+        total_db_duration = datetime.timedelta().total_seconds()
+        batch_duration = self.MediaBatch.duration
+        platform_duration = self.transaction_db.get_vendor(
+            self.MediaBatch.assingment)['duration']
+
+        for captioned_duration in self.transaction_db.get_all_durations():
+            total_db_duration += captioned_duration
+
+        try:            
+            platform_duration_from_db = platform_duration
+            print("Stored platform Duration:", platform_duration_from_db)
+        except:
+            print('platform Does not exists')
+        
+        est_platform_duration = sum(
+                batch_duration,
+                platform_duration_from_db)
+
+        total_db_duration = (est_platform_duration + total_db_duration)
+        platform_ratio = (est_platform_duration/total_db_duration) #  Calculate ratio
+        print(f'Values: \
+            {platform_ratio}, {total_db_duration}, {est_platform_duration}')
+            #If the addition of these durations is greater than 10% it won't order captions
+        return self.check_ratio_threshhold(platform_ratio)
         
 
     def platform_transaction(self, is_valid_order: bool) -> None:
@@ -97,11 +86,10 @@ class UploadBatch():
             is_valid_transaction: Boolean to determine if transaction should occur. 
         """        
 
-        self.MediaBatch.duration = format_duration_to_seconds(get_total_duration(
-            video_file_list=self.MediaBatch.files)
-            )
-        platform_db = self.get_platform_table()
-        is_valid_transaction = self.is_valid_order(platform_db)
+        self.MediaBatch.duration = format_duration_to_seconds(
+                get_total_duration(video_file_list=self.MediaBatch.files))
+
+        is_valid_transaction = self.is_valid_order()
         return is_valid_transaction
 
 
@@ -118,7 +106,7 @@ if __name__ == "__main__":
     if not batch.files:
         print('No accepted files found. Drag files or folders or both.')
     else:
-        batch_transaction = UploadBatch(batch, VendorDatabase(db_file=True))
+        batch_transaction = UploadBatch(batch, VendorDatabase())
         transaction_status = batch_transaction.determine_platform_ratio()
         if transaction_status:
             print("Ordered Captions")
